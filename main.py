@@ -792,9 +792,20 @@ outline_row_color=['#DCDCDC']
 
 
 #------------------ALL OF THE BELOW IS FORMATING FOR THE GUI AND ITS DISPLAYS
-# Create instance
-#have to use tkx if using a bloon widget to hover over tool tips.
+#set the screen window in the centre of the computer screen
 window = tk.Tk()
+# Gets the requested distance of the height and width from top left
+#of the computer screen and where the app will open
+windowWidth = window.winfo_reqwidth()
+windowHeight = window.winfo_reqheight()
+#print("Width",windowWidth,"Height",windowHeight)
+# Gets both half the screen width/height and window width/height
+positionRight = int(window.winfo_screenwidth()/2 - windowWidth/2)
+positionDown = int(window.winfo_screenheight()/2 - windowHeight)
+#print('Right position:',positionRight)
+#print('Down position:',positionDown)
+# Positions the window in the center of the screen.
+window.geometry("+{}+{}".format(positionRight, positionDown))
 # Disable resizing the GUI
 window.resizable(0,0)  #(x,y)
 # Add a title
