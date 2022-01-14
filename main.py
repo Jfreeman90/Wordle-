@@ -8,8 +8,7 @@ from random import choice
 def create_key(length):
     key_list=[]
     for i in range(length):
-        digits=list(range(26))
-        #X=left, H=right
+        digits=list(range(99))
         step=['X','H']
         digit=str(choice(digits))
         if len(digit)==1:
