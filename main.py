@@ -3,12 +3,242 @@ import math
 from tkinter import messagebox
 from datetime import datetime
 from random import choice
+
+#create the key
+def create_key(length):
+    key_list=[]
+    for i in range(length):
+        digits=list(range(26))
+        #X=left, H=right
+        step=['X','H']
+        digit=str(choice(digits))
+        if len(digit)==1:
+            digit=str(0)+digit
+        step=str(choice(step))
+        keystep=(digit+step)
+        key_list.append(keystep)
+  
+    key=''.join(key_list)
+    return key
+
+#split the key into a list of steps
+def split_key(key):
+    key_list=[]
+    for i in range(int(len(key)/3)):
+        key_step=key[i*3:i*3+3]
+        key_list.append(key_step)
+    return key_list
+
+#use the key and algorithsm to encrypt the password
+def encryption_algorithm(password, key):
+    key_list=split_key(key)
+    import string
+    #set up a list to reference what is being picked
+    lowercase_alphabet=list(string.ascii_lowercase)
+    uppercase_alphabet=list(string.ascii_uppercase)
+    numbers=['0','1','2','3','4','5','6','7','8','9']
+    #empty list to store the encrypted password
+    encrypted=[]
+    for i in range(len(password)):
+        steps=key_list[i][0:2]
+        if steps[0]=='0':
+            steps=int(key_list[i][1:2])
+        else:
+            steps=int(key_list[i][0:2])
+        method=key_list[i][2]
+        #print('steps:',steps,'method:', method)
+        element=password[i]
+         #if the password element is in numbers
+        #algorithm used to encode the numbers
+        if element in numbers:
+            index_loc=numbers.index(element)
+            if steps>len(numbers):
+                steps=steps%len(numbers)
+            if method=='H':
+                if index_loc+steps > len(numbers)-1:
+                    new_index=(steps-(len(numbers)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                if index_loc-steps < 0:
+                    new_index=len(numbers)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            new_element=numbers[new_index]
+            encrypted.append(new_element)
+        #if the password element is a lowercase letter
+        #algorithm used to encode the lowercase_letters as other lowercase letters
+        elif element in lowercase_alphabet:
+            #print('lower case')
+            index_loc=lowercase_alphabet.index(element)
+            #print('current index,',index_loc)
+            if steps>len(lowercase_alphabet):
+                steps=steps%len(lowercase_alphabet)
+            if method=='H':
+                #print('move right', steps)
+                if index_loc+steps > len(lowercase_alphabet)-1:
+                    new_index=(steps-(len(lowercase_alphabet)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                #print('move left',steps)
+                if index_loc-steps < 0:
+                    new_index=len(lowercase_alphabet)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            #print('new index',new_index)
+            new_element=lowercase_alphabet[new_index]
+            encrypted.append(new_element)  
+          
+        #if the password element is a lowercase letter
+        #algorithm used to encode the lowercase_letters as other lowercase letters
+        elif element in uppercase_alphabet:
+            #print('upper case')
+            index_loc=uppercase_alphabet.index(element)
+            #print(index_loc)
+            if steps>len(uppercase_alphabet):
+                steps=steps%len(uppercase_alphabet)
+            if method=='H': 
+                #print('move right', steps)
+                if index_loc+steps > len(uppercase_alphabet)-1:
+                    new_index=(steps-(len(uppercase_alphabet)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                #print('move left',steps)
+                if index_loc-steps < 0:
+                    new_index=len(uppercase_alphabet)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            #print('new index',new_index)
+            new_element=uppercase_alphabet[new_index]
+            encrypted.append(new_element)
+    return(''.join(encrypted))
+
+#given the key and the encypted password return back to the normal password without storing it.
+#the only variables stored are the key and the encrypted password
+def decipher_encrytion_algorithm(encrypted_password, key):
+    key_list=split_key(key)
+    import string
+    #set up a list to reference what is being picked
+    lowercase_alphabet=list(string.ascii_lowercase)
+    uppercase_alphabet=list(string.ascii_uppercase)
+    numbers=['0','1','2','3','4','5','6','7','8','9']
+    #empty list to store the encrypted password
+    encrypted=[]
+    for i in range(len(encrypted_password)):
+        steps=key_list[i][0:2]
+        if steps[0]=='0':
+            steps=int(key_list[i][1:2])
+        else:
+            steps=int(key_list[i][0:2])
+        method=key_list[i][2]
+        #print('steps:',steps,'method:', method)
+        element=encrypted_password[i]
+         #if the password element is in numbers
+        #algorithm used to encode the numbers
+        if element in numbers:
+            index_loc=numbers.index(element)
+            if steps>len(numbers):
+                steps=steps%len(numbers)
+            if method=='X':
+                if index_loc+steps > len(numbers)-1:
+                    new_index=(steps-(len(numbers)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                if index_loc-steps < 0:
+                    new_index=len(numbers)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            new_element=numbers[new_index]
+            encrypted.append(new_element)
+        #if the password element is a lowercase letter
+        #algorithm used to encode the lowercase_letters as other lowercase letters
+        elif element in lowercase_alphabet:
+            #print('lower case')
+            index_loc=lowercase_alphabet.index(element)
+            #print('current index,',index_loc)
+            if steps>len(lowercase_alphabet):
+                steps=steps%len(lowercase_alphabet)
+            if method=='X':
+                #print('move right', steps)
+                if index_loc+steps > len(lowercase_alphabet)-1:
+                    new_index=(steps-(len(lowercase_alphabet)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                #print('move left',steps)
+                if index_loc-steps < 0:
+                    new_index=len(lowercase_alphabet)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            #print('new index',new_index)
+            new_element=lowercase_alphabet[new_index]
+            encrypted.append(new_element)  
+          
+        #if the password element is a lowercase letter
+        #algorithm used to encode the lowercase_letters as other lowercase letters
+        elif element in uppercase_alphabet:
+            #print('upper case')
+            index_loc=uppercase_alphabet.index(element)
+            #print(index_loc)
+            if steps>len(uppercase_alphabet):
+                steps=steps%len(uppercase_alphabet)
+            if method=='X': 
+                #print('move right', steps)
+                if index_loc+steps > len(uppercase_alphabet)-1:
+                    new_index=(steps-(len(uppercase_alphabet)-index_loc))
+                else:
+                    new_index=index_loc+steps
+            else:
+                #print('move left',steps)
+                if index_loc-steps < 0:
+                    new_index=len(uppercase_alphabet)-(steps-index_loc)
+                else:
+                    new_index=index_loc-steps
+            #print('new index',new_index)
+            new_element=uppercase_alphabet[new_index]
+            encrypted.append(new_element)
+    return(''.join(encrypted))
+
+#function that checks username are correctly formatted.
+def check_username_rules(input):
+    #check length
+    #true means password/username is acceptable
+    if 4<len(input)<14:
+        for letter in input:
+            import string
+            #check for symbols
+            symbols=list(string.punctuation)
+        if letter in symbols:
+            return False
+    else:
+        return False
+    return True 
+    
+#function that checks passwords are correctly formatted.
+def check_password_rules(input):
+    #true means password/username is acceptable
+    if 5<len(input)<14:
+        for letter in input:
+            import string
+            #check for symbols
+            symbols=list(string.punctuation)
+        if letter in symbols:
+            return False
+    else:
+        return False
+    return True
+    
+    
 #------------------------INITIATE THE FIRST SCREEN
-global attempt, word_to_find, word_letters, word_dictionary,initial_load
+global attempt, word_to_find, word_letters, word_dictionary,initial_load, user_log_in_succesful
 #start the game at attempt 0
 attempt=0
 #when the game loads up defein a variable so the correct display can be shown
 initial_load=True
+user_log_in_succesful=False
 
 #get a word for the dictionary of words avaiable
 word_dictionary=[]
@@ -16,7 +246,7 @@ with open('6_letter_words.txt') as f:  #open the text file to get each word and 
     for word in f:
         word = word.strip()
         word_dictionary.append(word)
-        
+ 
 #print(word_dictionary)
 word_to_find=choice(word_dictionary)
 word_letters=list(word_to_find)
@@ -252,6 +482,7 @@ def move_left(event):
 #and intereacted with
 def check_row():
     global attempt, game_state_grid
+    #print(word_letters)
     #check the user has attempted to fill in each space
     if 0 not in game_state_grid[attempt]:
         if attempt==5:
@@ -290,7 +521,7 @@ def end_game_win_data_collection():
     #print(dt_end_time)  
     # In same directory open file in append mode and add a new line of data
     raw_data=open('raw_data_collection.txt',"a")
-    raw_data.write("\n"+dt_start_date+','+dt_start_time+','+dt_end_time+','+str(word_to_find)+","+"W"+","+str(attempt+1)+","+str(''.join(letters_guessed))) 
+    raw_data.write("\n"+dt_start_date+','+dt_start_time+','+dt_end_time+','+str(username)+','+str(word_to_find)+","+"W"+","+str(attempt+1)+","+str(''.join(letters_guessed))) 
     raw_data.close()
 
 #function that will run once the game ends, either a win or a loss and collect all the data on the game played
@@ -303,37 +534,213 @@ def end_game_lose_data_collection():
     #print(dt_end_time)  
     # In same directory open file in append mode and add a new line of data
     raw_data=open('raw_data_collection.txt',"a")
-    raw_data.write("\n"+dt_start_date+','+dt_start_time+','+dt_end_time+','+str(word_to_find)+","+"L"+","+str(attempt+1)+","+str(''.join(letters_guessed))) 
+    raw_data.write("\n"+dt_start_date+','+dt_start_time+','+dt_end_time+','+str(username)+','+str(word_to_find)+","+"L"+","+str(attempt+1)+","+str(''.join(letters_guessed))) 
     raw_data.close()
 
-#function to run when new game button is pressed which will reset everything
-def new_game():
-    from random import choice
-    global initial_load
-    #if the game has only just been started do not display a message box and just begin the game
-    if initial_load==True:
+#function that will open database of username/passwords and collect them into list(username, key, encrypted_password) to look up.
+def username_database_to_lists():
+    database=open('username_database.txt', 'r')
+    lists=[]
+    #mport each data list into a list of lists
+    for line in database:
+        stripped_line=line.strip()
+        infomation=stripped_line.split(',')
+        lists.append(infomation)
+    #go through the lists of lists above and set up a column of each variable that can be used to search through usernames and use
+    #the index location to find all other infomation
+    usernames=[]
+    keys=[]
+    encrypted_passwords=[]
+    for data in lists:
+        usernames.append(data[0])
+        keys.append(data[1])
+        encrypted_passwords.append(data[2])
+    return usernames, keys, encrypted_passwords
+    
+    
+#allow the user to create an account with the same constraints as password. Look up all other usernames to check it hasnt been taken
+def create_account():
+    global user_log_in_succesful, usernames, username
+    #get the username and password
+    username=username_input.get()
+    password=password_input.get()
+    #check the input is correctly format
+    if check_username_rules(username)==True: 
+        if check_password_rules(password) ==True:
+            if username in usernames:
+                #find the usernames index location to reference.
+                log_in_window.lift()
+                messagebox.showinfo(title="Log in Error", message='This username already exists. Try again')
+                log_in_window.lift()
+            else: 
+                key=create_key(13)
+                encrypted_password=encryption_algorithm(password, key)
+                # In same directory open file in append mode and add a new line username and passwords with a key
+                username_data=open('username_database.txt',"a")
+                username_data.write("\n"+str(username)+','+str(key)+','+str(encrypted_password))
+                username_data.close()
+                user_log_in_succesful=True
+                log_in_window.destroy()
+                #begin the game by updating the canvas
+                if user_log_in_succesful==True:
+                    global row, col,initial_load
+                    window.title("Wordle+ "+str(username))
+                    row=0
+                    col=0
+                    grid_canvas.delete('all')
+                    grid_canvas.configure(bg=main_colors[1])
+                    initial_load=False
+                    draw_grid()
+                    new_game_btn['text']='New Game'
+                    x0 = MARGIN + col * CELL_WIDTH + 1
+                    y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+                    x1 = MARGIN + (col + 1) * CELL_WIDTH - 1
+                    y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+                        
+                    #check that the row can be clicked if it matches up with the attempts taken so far
+                    if attempt==row and game_state_grid[row][col]==0:
+                        grid_canvas.delete('highlight')
+                        grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+                
+        else:
+            messagebox.showinfo(title="Log in Error", message='Passwords must be between 6 and 13 letters.\nUsernames must only contain letters and numbers.')
+            log_in_window.lift()
+    else:
+        messagebox.showinfo(title="Input Error", message='Usernames must be between 5 and 13 letters.\nUsernames must only contain letters and numbers.')
+        log_in_window.lift()
+        
+#check the user names match up with someone in the files already and check that the password entered by the user matches 
+#decipher the stored password using the key and check it is equal to the entry.
+def log_in_user():
+    global user_log_in_succesful, username
+    #get the username and password
+    username=username_input.get()
+    password=password_input.get()
+    #check username exists
+    if username in usernames:
+        #find the usernames index location to reference.
+        user_index=usernames.index(username)
+        decipher_pass=decipher_encrytion_algorithm(encrypted_passwords[user_index], keys[user_index])
+        #log the user in
+        if   password==decipher_pass:
+            user_log_in_succesful=True
+            log_in_window.destroy()
+        else:
+            messagebox.showinfo(title="Log in Error", message='Incorrect username or password. Try again')
+            log_in_window.lift()  
+    else:
+        messagebox.showinfo(title="Log in Error", message='This username doesnt not exist press create account to start.')
+        log_in_window.lift() 
+        
+    #begin the game
+    if user_log_in_succesful==True:
+        global row, col,initial_load
+        window.title("Wordle+ "+str(username))
+        row=0
+        col=0
         grid_canvas.delete('all')
         grid_canvas.configure(bg=main_colors[1])
         initial_load=False
         draw_grid()
         new_game_btn['text']='New Game'
+        x0 = MARGIN + col * CELL_WIDTH + 1
+        y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+        x1 = MARGIN + (col + 1) * CELL_WIDTH - 1
+        y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+            
+        #check that the row can be clicked if it matches up with the attempts taken so far
+        if attempt==row and game_state_grid[row][col]==0:
+            grid_canvas.delete('highlight')
+            grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+
+#function that will log the user in when pressing enter if they have entered the password
+def enter_to_log_in_pressed(event):
+    log_in_user()
+
+#function that will open a new window and allow users to enter a username and password
+def log_in_window():
+    #get relative x and y values of the original window
+    x = window.winfo_x()
+    y = window.winfo_y()
+    #open a new pop up window and re position it relative to the original window
+    #log in window must be global to allow it to be destroyed after clicking
+    global log_in_window
+    log_in_window = tk.Toplevel(window)
+    log_in_window.geometry("+%d+%d" % (x+5,  y + 150))
+    #log_in_window.geometry('280x100')
+    
+    #FRAME TO HOLD second window infomation
+    frm_window2=tk.Frame(master=log_in_window, bg=main_colors[1])
+    frm_window2.grid(row=0, column=0, sticky="ew")
+    frm_window2.grid_columnconfigure([0,1], weight=1)
+    frm_window2.grid_rowconfigure([0,1,2], weight=1)
+    
+    #define the username and password input string variables
+    global username_input, password_input
+    username_input = tk.StringVar()
+    password_input = tk.StringVar()
+    #username label hold the infomation
+    username_lbl=tk.Label(master=frm_window2, text="Username:",font=("Lucida Sans Typewriter", 14, "bold"), fg=main_colors[0], bg=main_colors[1])
+    username_lbl.grid(row=0, column=0, padx=(0,0), pady=(0,0))
+    #username entry
+    username_ent=tk.Entry(master=frm_window2, textvariable=username_input, width = 16)
+    username_ent.grid(row=0, column=1, padx=(0,0), pady=(0,0))
+    
+    #password label hold the infomation
+    password_lbl=tk.Label(master=frm_window2, text="Password:",font=("Lucida Sans Typewriter", 14, "bold"), fg=main_colors[0], bg=main_colors[1])
+    password_lbl.grid(row=1, column=0, padx=(0,0), pady=(0,0))
+    #password entry
+    password_ent=tk.Entry(master=frm_window2, show="*", textvariable=password_input, width = 16)
+    password_ent.grid(row=1, column=1, padx=(0,0), pady=(0,0))
+    password_ent.bind("<Return>", enter_to_log_in_pressed)        #bind ENTER to the password entry
+    
+    #Button to create account
+    create_account_btn=tk.Button(master=frm_window2, text="Create Account", font=("Lucida Sans Typewriter", 10), fg=button_colors[0], bg= button_colors[1],
+                       relief=tk.RIDGE, borderwidth=3, command=create_account)
+    create_account_btn.grid(row=2, column=0, padx=(4,4), pady=(3,3))
+    #Button to log in
+    log_in_btn=tk.Button(master=frm_window2, text="Log in", font=("Lucida Sans Typewriter", 10), fg=button_colors[0], bg= button_colors[1],
+                       relief=tk.RIDGE, borderwidth=3,width = 15, command=log_in_user)
+    log_in_btn.grid(row=2, column=1, padx=(4,4), pady=(3,3))
+    
+#function to run when new game button is pressed which will reset everything
+def new_game():
+    from random import choice
+    global initial_load, user_log_in_succesful
+    global game_state_grid, attempt
+    global row, col
+    #if the game has only just been started display a pop up window that will open a user/password entry box.
+    if initial_load==True:
+        #initial_load=False
+        log_in_window()
     else: 
         #create a check box that allows the user to check if they want to run the entire script since it can take a while for larger data sets.
         check=messagebox.askyesno(title='Warning!', message='This will start a new game and you will lose all progress. \nStart new Game?')
         if check==True:
-            global game_state_grid, attempt
             game_state_grid=[[0,0,0,0,0,0], 
                             [0,0,0,0,0,0],
                             [0,0,0,0,0,0],
                             [0,0,0,0,0,0],
                             [0,0,0,0,0,0],
                             [0,0,0,0,0,0]]
+            row=0
+            col=0                
             attempt=0
             #print(game_state_grid)
             grid_canvas.delete('all')
             grid_canvas.configure(bg=main_colors[1])
             draw_grid()
             new_game_btn['text']='New Game'
+            x0 = MARGIN + col * CELL_WIDTH + 1
+            y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+            x1 = MARGIN + (col + 1) * CELL_WIDTH - 1
+            y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+        
+            #check that the row can be3 clicked if it matches up with the attempts taken so far
+            if attempt==row and game_state_grid[row][col]==0:
+                grid_canvas.delete('highlight')
+                grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+            
             #pick a new word
             global word_to_find, word_letters, word_dictionary
             word_to_find=choice(word_dictionary)
@@ -368,6 +775,10 @@ WIN_HEIGHT=MARGIN * 2 + CELL_HEIGHT * cols
 WIN_WIDTH=MARGIN * 2 + CELL_WIDTH * rows
 BUFFER=12	#space between each rectangle
 
+#use the username and password to look up all of the infomation from the data base and decided if they can log in or not.
+global usernames, keys, encrypted_passwords
+usernames, keys, encrypted_passwords=username_database_to_lists() 
+
 
 #color variables that can change the whole program straight away
 main_colors=['black','white']               #brown, light yellow
@@ -377,6 +788,9 @@ font_colors=['#000000', '#696969']          #black, dark gray.
 victory_colors=["#FFFAF0", "#D8BFD8"]      	#text and background for victory scene
 losing_colors=["#A0522D", "#D8BFD8"]      	#text and background for victory scene
 outline_row_color=['#DCDCDC']
+
+
+
 
 #------------------ALL OF THE BELOW IS FORMATING FOR THE GUI AND ITS DISPLAYS
 # Create instance
@@ -436,7 +850,7 @@ btn_submit_guess=tk.Button(master=frm_end_game_button, text='Guess Row', font=("
 btn_submit_guess.grid(row=0, column=0, padx=(30,10), pady=(5,5))
 
 #NEW GAME BUTTON
-new_game_btn=tk.Button(master=frm_end_game_button, text='Start Game', font=("Lucida Sans Typewriter", 12), fg=button_colors[0], bg= button_colors[1],
+new_game_btn=tk.Button(master=frm_end_game_button, text='Log In', font=("Lucida Sans Typewriter", 12), fg=button_colors[0], bg= button_colors[1],
                        relief=tk.RIDGE, borderwidth=3, command=new_game)
 new_game_btn.grid(row=0, column=1, padx=(10,30), pady=(5,5))
 
