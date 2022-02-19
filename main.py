@@ -400,7 +400,7 @@ def cell_right_clicked(event):
         y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
         
         #check that the row can be clicked if it matches up with the attempts taken so far
-        if attempt==row:
+        if attempt==row and (game_state_grid[row][col]!=correct_word_grid[row][col]):
             grid_canvas.create_rectangle(x0, y0, x1, y1, fill=outline_row_color[0], outline='black',width=1, tags="deleted")
             grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
             #reset the game state grid to 0
@@ -424,7 +424,7 @@ def delete_key_pressed(event):
             
 #function that will draw on the value pressed at the correct location based on where the cell has been clicked
 def key_pressed(event):
-    global game_state_grid,letters_guessed
+    global game_state_grid,letters_guessed, row, col
     #print('row:',row,'col:', col)
     guessed_value=event.char
     #print('guessed_value:', guessed_value)
@@ -438,8 +438,31 @@ def key_pressed(event):
         y_loc=MARGIN + (row * CELL_HEIGHT + CELL_HEIGHT/2) + BUFFER/2
         #edit the grid to show what the player has typed in
         grid_canvas.create_text(x_loc, y_loc, text=guessed_value,font=("Lucida Sans Typewriter", 20), tags='guess', fill=main_colors[0])
-    else:
-        messagebox.showinfo(title="Input error", message='There is already a letter in this space. \nYou can right click the grid sqaure to delete the letter')
+        
+        #once the guiess has been entered moce the player across one to the right to continue typing the word
+        if col<cols-1:
+            #print(game_state_grid)
+            grid_canvas.delete('highlight')
+            #skip across any of the guesses that are correct and go to the next empty box. 
+            index=[i for i,x in enumerate(game_state_grid[row]) if x == 0]
+            #print('Where are the 0s, indexes', index)
+            #set new coloumn and check that is is a valid empty square that can be drawn
+            col=col+1
+            if col in index:
+                x0 = MARGIN + (col) * CELL_WIDTH + 1
+                y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+                x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
+                y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+                grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+            elif len(index)>0:
+                col=index[0]
+                x0 = MARGIN + (col) * CELL_WIDTH + 1
+                y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+                x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
+                y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+                grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+    #else:
+        #messagebox.showinfo(title="Input error", message='There is already a letter in this space. \nYou can right click the grid sqaure to delete the letter')
     
 #function that allows the player to move to the right by clicking the right arrow
 def move_right(event):
@@ -480,7 +503,7 @@ def move_left(event):
 #function that will compare all of the values entered and draw out accordingly and add one to attempts so that a new grid can be drawn correct
 #and intereacted with
 def check_row():
-    global attempt, game_state_grid
+    global attempt, game_state_grid, row, col
     #print(word_letters)
     #check the user has attempted to fill in each space
     if 0 not in game_state_grid[attempt]:
@@ -503,6 +526,21 @@ def check_row():
             grid_canvas.delete('guess')
             #redraw the grid after updating
             draw_grid()
+            
+            #high light the far left box for user to straight away begin typing new word
+            row=row+1
+            #skip across any of the guesses that are correct and go to the first empty box and highlight that
+            index=[i for i,x in enumerate(game_state_grid[row]) if x == 0]
+            col=index[0]
+            grid_canvas.delete('highlight')
+            
+            #get row and column index from position
+            x0 = MARGIN + (col) * CELL_WIDTH + 1
+            y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+            x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
+            y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+            grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+            
     else:
         messagebox.showinfo(title="Input error", message='Enter a letter in each box before checking row')
 
@@ -684,6 +722,7 @@ def log_in_window():
     #username entry
     username_ent=tk.Entry(master=frm_window2, textvariable=username_input, width = 16)
     username_ent.grid(row=0, column=1, padx=(0,0), pady=(0,0))
+    username_ent.focus_set()
     
     #password label hold the infomation
     password_lbl=tk.Label(master=frm_window2, text="Password:",font=("Lucida Sans Typewriter", 14, "bold"), fg=main_colors[0], bg=main_colors[1])
@@ -801,7 +840,7 @@ windowHeight = window.winfo_reqheight()
 #print("Width",windowWidth,"Height",windowHeight)
 # Gets both half the screen width/height and window width/height
 positionRight = int(window.winfo_screenwidth()/2 - windowWidth/2)
-positionDown = int(window.winfo_screenheight()/2 - windowHeight)
+positionDown = int(window.winfo_screenheight()/2 - windowHeight*2)
 #print('Right position:',positionRight)
 #print('Down position:',positionDown)
 # Positions the window in the center of the screen.
