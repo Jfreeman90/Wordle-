@@ -311,7 +311,8 @@ def draw_outline(attempt):
                 x_loc=MARGIN  + (i * CELL_WIDTH + CELL_WIDTH/2)
                 y_loc=MARGIN +(attempt * CELL_HEIGHT + CELL_HEIGHT/2) + BUFFER/2
                 grid_canvas.create_text(x_loc, y_loc, text=previous_row[i], font=("Lucida Sans Typewriter", 20), tags='prev_row_check_text', fill=main_colors[0])
-                
+
+        
 #draw out the grid check each element and update the canvas to display the game state
 def draw_grid():
     #draw the outline of the row the player is currently on.
@@ -347,6 +348,7 @@ def draw_grid():
                 grid_canvas.create_text(x_loc, y_loc, text=element, font=("Lucida Sans Typewriter", 20), tags='incorrect_text', fill=main_colors[0])
                 grid_canvas.create_rectangle(x0+1, y0, x1+1, y1, outline='red', width=2, tags='incorrect_outline')
 
+
 #function to draw out a winning screen image that shows data and so on
 def draw_vitory_scene():
     grid_canvas.create_image(MARGIN-5 ,MARGIN, anchor=tk.NW, image=victory_image)    
@@ -354,8 +356,10 @@ def draw_vitory_scene():
     x = WIN_WIDTH/2
     y = WIN_HEIGHT/2
     grid_canvas.create_text(x, y-MARGIN, text="You win!", tags="winner", fill='black', font=("Arial", 32,'bold'))
-    grid_canvas.create_text(x, y+MARGIN, text="WORD: "+str(word_to_find.upper()), tags="Winning_word", fill='black', font=("Arial", 16,'bold'))
+    grid_canvas.create_text(x, WIN_HEIGHT-10, text="Press CTRL+S to open your stats screen!", tags="stats", fill='black', font=("Arial", 10,'bold'))
+    grid_canvas.create_text(x, y+MARGIN+5, text="WORD:    "+str(word_to_find.upper()), tags="Winning_word", fill='green', font=("Arial", 16,'bold'))
     
+
 #function to draw out a winning screen image that shows data and so on
 def draw_losing_scene():
     grid_canvas.create_image(MARGIN-10 ,MARGIN-10, anchor=tk.NW, image=losing_image)
@@ -363,7 +367,9 @@ def draw_losing_scene():
     x = WIN_WIDTH/2
     y = WIN_HEIGHT/2
     grid_canvas.create_text(x, y-MARGIN, text="You lost!", tags="loser", fill='black',font=("Arial", 32,'bold'))
+    grid_canvas.create_text(x, WIN_HEIGHT-20, text="Press CTRL+S to open your stats screen!", tags="stats", fill='black', font=("Arial", 10,'bold'))
     grid_canvas.create_text(x, y+MARGIN, text="WORD: "+str(word_to_find.upper()), tags="Winning_word", fill='black', font=("Arial",16,'bold'))
+
 
 #function that will be used everytime a cell is clicked
 def cell_clicked(event):
@@ -383,6 +389,7 @@ def cell_clicked(event):
         if attempt==row and game_state_grid[row][col]==0:
             grid_canvas.delete('highlight')
             grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+
 
 #function that will be used everytime a cell is left clicked to delete and reset the cells infomation
 def cell_right_clicked(event):
@@ -406,6 +413,7 @@ def cell_right_clicked(event):
             #reset the game state grid to 0
             game_state_grid[row][col]=0
 
+
 #function that will delete the letter in the current grid space
 def delete_key_pressed(event):
     global row, col, attempt, game_state_grid
@@ -421,48 +429,50 @@ def delete_key_pressed(event):
         #reset the game state grid to 0
         game_state_grid[row][col]=0
             
-            
+
 #function that will draw on the value pressed at the correct location based on where the cell has been clicked
 def key_pressed(event):
     global game_state_grid,letters_guessed, row, col
     #print('row:',row,'col:', col)
-    guessed_value=event.char
-    #print('guessed_value:', guessed_value)
     import string
+    guessed_value=event.char
     uppercases=string.ascii_uppercase
     guessed_value=str(guessed_value.upper())
-    letters_guessed.append(guessed_value)
-    if attempt==row  and 0<=col<=cols and guessed_value in uppercases and game_state_grid[row][col]==0: #check input and location are valid before drawing the attempt
-        game_state_grid[row][col]=guessed_value
-        x_loc=MARGIN + (col * CELL_WIDTH + CELL_WIDTH/2)
-        y_loc=MARGIN + (row * CELL_HEIGHT + CELL_HEIGHT/2) + BUFFER/2
-        #edit the grid to show what the player has typed in
-        grid_canvas.create_text(x_loc, y_loc, text=guessed_value,font=("Lucida Sans Typewriter", 20), tags='guess', fill=main_colors[0])
-        
-        #once the guiess has been entered moce the player across one to the right to continue typing the word
-        if col<cols-1:
-            #print(game_state_grid)
-            grid_canvas.delete('highlight')
-            #skip across any of the guesses that are correct and go to the next empty box. 
-            index=[i for i,x in enumerate(game_state_grid[row]) if x == 0]
-            #print('Where are the 0s, indexes', index)
-            #set new coloumn and check that is is a valid empty square that can be drawn
-            col=col+1
-            if col in index:
-                x0 = MARGIN + (col) * CELL_WIDTH + 1
-                y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
-                x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
-                y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
-                grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
-            elif len(index)>0:
-                col=index[0]
-                x0 = MARGIN + (col) * CELL_WIDTH + 1
-                y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
-                x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
-                y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
-                grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
-    #else:
-        #messagebox.showinfo(title="Input error", message='There is already a letter in this space. \nYou can right click the grid sqaure to delete the letter')
+    #print('guessed_value:', guessed_value)
+    #print(bool(guessed_value))
+    if guessed_value in uppercases and bool(guessed_value)==True:
+        if attempt==row  and 0<=col<=cols and game_state_grid[row][col]==0: #check input and location are valid before drawing the attempt
+            letters_guessed.append(guessed_value)
+            game_state_grid[row][col]=guessed_value
+            x_loc=MARGIN + (col * CELL_WIDTH + CELL_WIDTH/2)
+            y_loc=MARGIN + (row * CELL_HEIGHT + CELL_HEIGHT/2) + BUFFER/2
+            #edit the grid to show what the player has typed in
+            grid_canvas.create_text(x_loc, y_loc, text=guessed_value,font=("Lucida Sans Typewriter", 20), tags='guess', fill=main_colors[0])
+            
+            #once the guiess has been entered moce the player across one to the right to continue typing the word
+            if col<cols-1:
+                #print(game_state_grid)
+                grid_canvas.delete('highlight')
+                #skip across any of the guesses that are correct and go to the next empty box. 
+                index=[i for i,x in enumerate(game_state_grid[row]) if x == 0]
+                #print('Where are the 0s, indexes', index)
+                #set new coloumn and check that is is a valid empty square that can be drawn
+                col=col+1
+                if col in index:
+                    x0 = MARGIN + (col) * CELL_WIDTH + 1
+                    y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+                    x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
+                    y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+                    grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+                elif len(index)>0:
+                    col=index[0]
+                    x0 = MARGIN + (col) * CELL_WIDTH + 1
+                    y0 = MARGIN + row * CELL_HEIGHT + 1 +BUFFER
+                    x1 = MARGIN + ((col) + 1) * CELL_WIDTH - 1
+                    y1 = MARGIN + (row + 1) * CELL_HEIGHT - 1 
+                    grid_canvas.create_rectangle(x0, y0, x1, y1, outline=highlights[0], width=2, tags="highlight")
+        #else:
+            #messagebox.showinfo(title="Input error", message='There is already a letter in this space. \nYou can right click the grid sqaure to delete the letter')
     
 #function that allows the player to move to the right by clicking the right arrow
 def move_right(event):
@@ -677,6 +687,7 @@ def log_in_user():
         col=0
         grid_canvas.delete('all')
         grid_canvas.configure(bg=main_colors[1])
+        grid_canvas.create_text(142, 10, text="Press right mouse button to delete a guess", tags="instructions", fill='black', font=("Arial", 9,'bold'))
         initial_load=False
         draw_grid()
         new_game_btn['text']='New Game'
@@ -797,7 +808,158 @@ def new_game():
             #print(dt_start_date)
             #print(dt_start_time) 
 
+#close the stats window
+def close_stats_screen():
+    global stats_window
+    stats_window.destroy()
 
+def new_game_stats_screen():
+    close_stats_screen()
+    new_game()
+
+#open the stats window which looks up the username from the database and displays relevent stats
+def stats_screen(event):
+    import pandas as pd
+    #scripts and functions to extract the relevent infomation for the username using pandas and the raw data csv file raw_data_collection.txt
+    # readinag given csv file
+    # and creating dataframe
+    all_data = pd.read_csv("raw_data_collection.txt")
+    #print(all_data.head())
+    print(word_to_find)
+    #return the data frame for only the username that is searched for, on top of that check that username is found and if not return a messagebox instead of an error
+    current_user=username
+    #print(all_data['username'].values)
+    #check the username is even in the data base and if so set up a new dataframe of only the users data to analyse
+    if current_user in all_data['username'].values:
+        username_data=all_data.loc[all_data['username'] == current_user]
+        #convert the time colums into time format
+        username_data['time_diff'] = pd.to_datetime(username_data['end_time']) - pd.to_datetime(username_data['start_time'])
+
+        #get all of the stats used on the stats screen as variables
+        games_played=username_data.shape[0]
+        #print('Games played in total', games_played)
+        games_won=username_data.loc[username_data['win/lose']=='W'].shape[0]
+        #print('games won in total', games_won)
+        games_won_percentage=round((games_won/games_played)*100, 2)
+        #print('Win perfentage', games_won_percentage, '%')
+        least_attempts=username_data['rows_completed'].min()
+        #print('least attempts', least_attempts)
+        average_attempts=round(username_data['rows_completed'].mean(), 2)
+        #print('average attempts', average_attempts)
+        fastest_game=username_data['time_diff'].min()
+        #print('fastest game', str(fastest_game)[10:])
+        longest_game=username_data['time_diff'].max()
+        #print('Longest game', str(longest_game)[10:])
+        #print(username_data)
+
+        #ENSURE THE POP UP WINDOW IS IN THE RIGHT PLACE RELATIVE TO THE MAIN WINDOW
+        #get relative x and y values of the original window
+        x = window.winfo_x()
+        y = window.winfo_y()
+        #open a new pop up window and re position it relative to the original window
+        #stats_window must be global to allow it to be destroyed after clicking
+        global stats_window
+        stats_window = tk.Toplevel(window)
+        stats_window.geometry("+%d+%d" % (x-20,  y + 50))
+        #stats_window.geometry('280x100')
+        # Disable resizing the GUI
+        stats_window.resizable(0,0)  #(x,y)
+        # Add a title
+        stats_window.title("Wordle+ - Stats for " + str(username))
+
+        #FRAME TO HOLD TITLE
+        frm_title=tk.Frame(master = stats_window, background=main_colors[1])
+        frm_title.grid(row=0, column=0, sticky="ew")
+        frm_title.grid_columnconfigure([0,1], weight=1)
+
+        #TITLE
+        lbl_title=tk.Label(master=frm_title, 
+                        text="WORDLE+ stats",
+                        font=("Minion Pro Med", 30,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_title.grid(row=0, column=0, padx=(10,10), sticky="ew")
+
+        #BUFFER
+        buffer=tk.Label(master=frm_title, 
+                        text=" ",
+                        font=("Minion Pro Med", 10,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        buffer.grid(row=1, column=0, sticky="ew")
+
+        #FRAME TO HOLD THE USERNAME 
+        frm_username=tk.Frame(master = stats_window, background=main_colors[1])
+        frm_username.grid(row=1, column=0, sticky="ew")
+        frm_username.grid_rowconfigure(0, weight=1)
+
+        #USERNAME
+        lbl_username=tk.Label(master=frm_username, 
+                        text="Username: " + current_user, 
+                        font=("Minion Pro Med", 18,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_username.grid(row=0, column=0,pady=(3), sticky="w")
+
+        #FRAME TO HOLD THE DIFFERENT STATS LABELS
+        frm_stats=tk.Frame(master = stats_window, background=main_colors[1])
+        frm_stats.grid(row=2, column=0, sticky="ew")
+        #frm_stats.grid_rowconfigure([0,1], weight=1)
+
+        #GAMES PLAYED
+        lbl_games_played=tk.Label(master=frm_stats, 
+                        text="Games played: " + str(games_played), 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_games_played.grid(row=0, column=0, sticky="w")
+
+        #GAMES WON
+        lbl_games_won=tk.Label(master=frm_stats, 
+                        text="Games won: " + str(games_won) + ' ('+str(games_won_percentage)+'%)', 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_games_won.grid(row=1, column=0, sticky="w")
+
+        #FASTEST GAME
+        lbl_fastest_game=tk.Label(master=frm_stats, 
+                        text="Fastest game (m:s): " + str(fastest_game)[10:], 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_fastest_game.grid(row=2, column=0, sticky="w")
+
+        #LEAST ATTEMPTS
+        lbl_least_attempts=tk.Label(master=frm_stats, 
+                        text="Least Attempts: " + str(least_attempts), 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_least_attempts.grid(row=3, column=0, sticky="w")
+
+        #LONGEST GAME
+        lbl_longest_game=tk.Label(master=frm_stats, 
+                        text="Longest game (m:s): " + str(longest_game)[10:], 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_longest_game.grid(row=4, column=0, sticky="w")
+
+        #AVERAGE ATTEMPTS
+        lbl_average_attempts=tk.Label(master=frm_stats, 
+                        text="Average attempts: " + str(average_attempts), 
+                        font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        lbl_average_attempts.grid(row=5, column=0, sticky="w")
+
+        #BUFFER
+        buffer=tk.Label(master=frm_stats, 
+                        text=" ",
+                        font=("Minion Pro Med", 15,  "bold"), foreground=main_colors[0], background=main_colors[1])
+        buffer.grid(row=6, column=0, sticky="ew")
+
+        #FRAME TO HOLD THE CLOSE AND NEW GAME BUTTONS
+        frm_buttons=tk.Frame(master = stats_window, background=main_colors[1])
+        frm_buttons.grid(row=3, column=0, sticky="ew")
+        frm_buttons.grid_rowconfigure(0, weight=1)
+        frm_buttons.grid_columnconfigure([0,1], weight=1)
+
+        #CLOSE STAT SCREEN BUTTON
+        close_stats_btn=tk.Button(master=frm_buttons, text='Close Stats', font=("Lucida Sans Typewriter", 12), fg=button_colors[0], bg= button_colors[1],
+                            relief=tk.RIDGE, borderwidth=3, width=12, command =close_stats_screen)
+        close_stats_btn.grid(row=0, column=0, padx=(0,5), pady=(5,5))
+
+        #NEW GAME BUTTON
+        new_game_btn=tk.Button(master=frm_buttons, text='New Game', font=("Lucida Sans Typewriter", 12), fg=button_colors[0], bg= button_colors[1],
+                            relief=tk.RIDGE, borderwidth=3, width=12, command=new_game_stats_screen)
+        new_game_btn.grid(row=0, column=1, padx=(5,0), pady=(5,5))
+
+    else:
+        messagebox.showinfo(title="Input Error", message='Username was not found')
 
 
 # ------------------------------------ ALL APP FORMATTING -------------------------------------------
@@ -832,6 +994,7 @@ outline_row_color=['#DCDCDC']
 
 #------------------ALL OF THE BELOW IS FORMATING FOR THE GUI AND ITS DISPLAYS
 #set the screen window in the centre of the computer screen
+global window
 window = tk.Tk()
 # Gets the requested distance of the height and width from top left
 #of the computer screen and where the app will open
@@ -885,6 +1048,7 @@ grid_canvas.bind("<Right>", move_right)               #bind right arrow
 grid_canvas.bind("<Left>", move_left)                 #bind left arrow
 grid_canvas.bind("<Delete>", delete_key_pressed)        #bind delete key to do the same as right cell clicked
 grid_canvas.bind("<BackSpace>", delete_key_pressed)        #bind delete key to do the same as right cell clicked
+grid_canvas.bind('<Control-Key-s>', stats_screen) 
 grid_canvas.focus_set() #set focus of canvas here so when a key is pressed it can be used
 
 #FRAME TO HOLD END GAME BUTTONS
