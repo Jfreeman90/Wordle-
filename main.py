@@ -231,51 +231,7 @@ def check_password_rules(input):
     return True
     
     
-#------------------------INITIATE THE FIRST SCREEN
-global attempt, word_to_find, word_letters, word_dictionary,initial_load, user_log_in_succesful
-#start the game at attempt 0
-attempt=0
-#when the game loads up defein a variable so the correct display can be shown
-initial_load=True
-user_log_in_succesful=False
 
-#get a word for the dictionary of words avaiable
-word_dictionary=[]
-with open('6_letter_words.txt') as f:  #open the text file to get each word and add to the dictionary of words
-    for word in f:
-        word = word.strip()
-        word_dictionary.append(word)
- 
-#print(word_dictionary)
-word_to_find=choice(word_dictionary)
-word_letters=list(word_to_find)
-#print(word_letters)
-#set up an empty list to store all of the letters pressed and entered by the user
-global letters_guessed
-letters_guessed=[]
-
-# datetime object containing current date and time to initiate the file
-newgameTime = datetime.now()
-# dd/mm/YY H:M:S
-global dt_start_date, dt_start_time
-dt_start_date = newgameTime.strftime("%Y/%m/%d")  
-dt_start_time = newgameTime.strftime("%H:%M:%S")        
-#print(dt_start_date)
-#print(dt_start_time)  
-
-#create a grid that can be checked for each row where ach row is the correct word and value the user is looking for
-#this variable will not be altered and just refered to to check things.
-global correct_word_grid
-correct_word_grid=[word_letters,word_letters,word_letters,word_letters,word_letters,word_letters]
-
-#holds all values the player has entered 0 means that nothing has been entered
-global game_state_grid
-game_state_grid=[[0,0,0,0,0,0], 
-				[0,0,0,0,0,0],
-				[0,0,0,0,0,0],
-				[0,0,0,0,0,0],
-				[0,0,0,0,0,0],
-				[0,0,0,0,0,0]]
 
 
 #---------------ALL FUNCTIONS NEEDED-------------------
@@ -705,6 +661,10 @@ def log_in_user():
 def enter_to_log_in_pressed(event):
     log_in_user()
 
+#function that will switch focus from username entry to password entry
+def entry_enter_is_pressed(event):
+    password_ent.focus_set()
+
 #function that will open a new window and allow users to enter a username and password
 def log_in_window():
     #get relative x and y values of the original window
@@ -734,11 +694,13 @@ def log_in_window():
     username_ent=tk.Entry(master=frm_window2, textvariable=username_input, width = 16)
     username_ent.grid(row=0, column=1, padx=(0,0), pady=(0,0))
     username_ent.focus_set()
+    username_ent.bind("<Return>", entry_enter_is_pressed)        #bind ENTER to the username entry
     
     #password label hold the infomation
     password_lbl=tk.Label(master=frm_window2, text="Password:",font=("Lucida Sans Typewriter", 14, "bold"), fg=main_colors[0], bg=main_colors[1])
     password_lbl.grid(row=1, column=0, padx=(0,0), pady=(0,0))
     #password entry
+    global password_ent
     password_ent=tk.Entry(master=frm_window2, show="*", textvariable=password_input, width = 16)
     password_ent.grid(row=1, column=1, padx=(0,0), pady=(0,0))
     password_ent.bind("<Return>", enter_to_log_in_pressed)        #bind ENTER to the password entry
@@ -844,12 +806,16 @@ def stats_screen(event):
         #print('Win perfentage', games_won_percentage, '%')
         least_attempts=username_data['rows_completed'].min()
         #print('least attempts', least_attempts)
-        average_attempts=round(username_data['rows_completed'].mean(), 2)
+        average_attempts=username_data['rows_completed'].mean()
         #print('average attempts', average_attempts)
         fastest_game=username_data['time_diff'].min()
         #print('fastest game', str(fastest_game)[10:])
+        fastest_game_word= username_data['word'].iloc[username_data['time_diff'].idxmin()]
+        #print(fastest_game_word)
         longest_game=username_data['time_diff'].max()
         #print('Longest game', str(longest_game)[10:])
+        longest_game_word= username_data['word'].iloc[username_data['time_diff'].idxmax()]
+        #print(longest_game_word)
         #print(username_data)
 
         #ENSURE THE POP UP WINDOW IS IN THE RIGHT PLACE RELATIVE TO THE MAIN WINDOW
@@ -860,7 +826,7 @@ def stats_screen(event):
         #stats_window must be global to allow it to be destroyed after clicking
         global stats_window
         stats_window = tk.Toplevel(window)
-        stats_window.geometry("+%d+%d" % (x-20,  y + 50))
+        stats_window.geometry("+%d+%d" % (x-22,  y + 180))
         #stats_window.geometry('280x100')
         # Disable resizing the GUI
         stats_window.resizable(0,0)  #(x,y)
@@ -914,7 +880,7 @@ def stats_screen(event):
 
         #FASTEST GAME
         lbl_fastest_game=tk.Label(master=frm_stats, 
-                        text="Fastest game (m:s): " + str(fastest_game)[10:], 
+                        text="Fastest game (m:s): " + str(fastest_game)[10:] + '  (' + str(fastest_game_word)+')', 
                         font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
         lbl_fastest_game.grid(row=2, column=0, sticky="w")
 
@@ -926,7 +892,7 @@ def stats_screen(event):
 
         #LONGEST GAME
         lbl_longest_game=tk.Label(master=frm_stats, 
-                        text="Longest game (m:s): " + str(longest_game)[10:], 
+                        text="Longest game (m:s): " + str(longest_game)[10:] + '  (' + str(longest_game_word)+')', 
                         font=("Minion Pro Med", 12,  "bold"), foreground=main_colors[0], background=main_colors[1])
         lbl_longest_game.grid(row=4, column=0, sticky="w")
 
@@ -960,6 +926,55 @@ def stats_screen(event):
 
     else:
         messagebox.showinfo(title="Input Error", message='Username was not found')
+
+
+
+#------------------------INITIATE THE FIRST SCREEN
+global attempt, word_to_find, word_letters, word_dictionary,initial_load, user_log_in_succesful
+#start the game at attempt 0
+attempt=0
+#when the game loads up defein a variable so the correct display can be shown
+initial_load=True
+user_log_in_succesful=False
+
+#get a word for the dictionary of words avaiable
+word_dictionary=[]
+with open('6_letter_words.txt') as f:  #open the text file to get each word and add to the dictionary of words
+    for word in f:
+        word = word.strip()
+        word_dictionary.append(word)
+ 
+#print(word_dictionary)
+word_to_find=choice(word_dictionary)
+word_letters=list(word_to_find)
+#print(word_letters)
+#set up an empty list to store all of the letters pressed and entered by the user
+global letters_guessed
+letters_guessed=[]
+
+# datetime object containing current date and time to initiate the file
+newgameTime = datetime.now()
+# dd/mm/YY H:M:S
+global dt_start_date, dt_start_time
+dt_start_date = newgameTime.strftime("%Y/%m/%d")  
+dt_start_time = newgameTime.strftime("%H:%M:%S")        
+#print(dt_start_date)
+#print(dt_start_time)  
+
+#create a grid that can be checked for each row where ach row is the correct word and value the user is looking for
+#this variable will not be altered and just refered to to check things.
+global correct_word_grid
+correct_word_grid=[word_letters,word_letters,word_letters,word_letters,word_letters,word_letters]
+
+#holds all values the player has entered 0 means that nothing has been entered
+global game_state_grid
+game_state_grid=[[0,0,0,0,0,0], 
+				[0,0,0,0,0,0],
+				[0,0,0,0,0,0],
+				[0,0,0,0,0,0],
+				[0,0,0,0,0,0],
+				[0,0,0,0,0,0]]
+
 
 
 # ------------------------------------ ALL APP FORMATTING -------------------------------------------
@@ -1002,12 +1017,13 @@ windowWidth = window.winfo_reqwidth()
 windowHeight = window.winfo_reqheight()
 #print("Width",windowWidth,"Height",windowHeight)
 # Gets both half the screen width/height and window width/height
-positionRight = int(window.winfo_screenwidth()/2 - windowWidth/2)
-positionDown = int(window.winfo_screenheight()/2 - windowHeight*2)
+#positionRight = int(window.winfo_screenwidth()/2 - windowWidth/2)
+#positionDown = int(window.winfo_screenheight()/2 - windowHeight*2)
 #print('Right position:',positionRight)
 #print('Down position:',positionDown)
 # Positions the window in the center of the screen.
-window.geometry("+{}+{}".format(positionRight, positionDown))
+#window.geometry("+{}+{}".format(positionRight, positionDown))
+#window.geometry("200,200"))
 # Disable resizing the GUI
 window.resizable(0,0)  #(x,y)
 # Add a title
